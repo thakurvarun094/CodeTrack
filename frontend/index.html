@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="assets/poseidon.png">
   <!-- Supabase JS Client via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -21,12 +22,7 @@
     <header class="navbar">
       <div class="nav-container">
         <a href="#/" class="brand">
-          <div class="brand-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="16 18 22 12 16 6"></polyline>
-              <polyline points="8 6 2 12 8 18"></polyline>
-            </svg>
-          </div>
+          <img src="assets/poseidon.png" alt="CodeTrack Logo" class="brand-logo-img">
           <span>Code<span class="brand-accent">Track</span></span>
         </a>
 
@@ -49,9 +45,8 @@
     <section class="landing-hero">
       <div class="hero-bg-accent"></div>
       <div class="hero-container">
-        <div class="hero-badge">
-          <span class="badge-dot"></span>
-          <span>Unified Developer Analytics &bull; Google OAuth via Supabase &bull; 4 Platforms</span>
+        <div class="hero-logo-box">
+          <img src="assets/poseidon.png" alt="CodeTrack Logo" class="hero-logo-img">
         </div>
 
         <h1 class="hero-title">
@@ -66,66 +61,37 @@
         <!-- Prominent White-Blue Login Card in Hero -->
         <div class="landing-auth-card" id="landingAuthBox">
           <div class="auth-card-head">
-            <div class="brand-icon sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="16 18 22 12 16 6"></polyline>
-                <polyline points="8 6 2 12 8 18"></polyline>
-              </svg>
-            </div>
+            <img src="assets/poseidon.png" alt="CodeTrack" class="brand-logo-img sm">
             <div>
               <h3>Sign In to Enter Dashboard</h3>
-              <p class="auth-sub">Choose your sign-in method to access your unified analytics</p>
+              <p class="auth-sub">Sign in with your Google account to access your unified analytics</p>
             </div>
           </div>
 
           <div class="auth-buttons-stack">
+            <!-- Google Sign In Notification / Status Banner -->
+            <div id="authNotice" class="auth-notice-box" style="display: none;"></div>
+
             <!-- Google Sign In via Supabase -->
-            <button id="landingGoogleSignInBtn" class="btn-google-oauth">
-              <svg width="20" height="20" viewBox="0 0 24 24">
+            <button id="landingGoogleSignInBtn" class="btn-google-oauth" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" id="googleGIcon">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
                 <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
                 <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
               </svg>
-              <span>Continue with Google</span>
+              <span id="googleBtnText">Continue with Google</span>
             </button>
-
-            <div class="auth-divider">
-              <span>OR ENTER DIRECTLY</span>
-            </div>
-
-            <!-- Instant Demo / Guest Mode -->
-            <button id="landingGuestSignInBtn" class="btn-primary btn-block">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              <span>Enter with Instant Demo / Guest Mode &rarr;</span>
-            </button>
-
-            <!-- Supabase Custom Keys Settings -->
-            <div class="supabase-config-box">
-              <details>
-                <summary>⚙️ Supabase Project Settings (Optional custom keys)</summary>
-                <div class="sb-fields-form">
-                  <label for="sbUrlInput">Supabase Project URL:</label>
-                  <input type="text" id="sbUrlInput" placeholder="https://your-project.supabase.co">
-                  
-                  <label for="sbKeyInput">Supabase Anon Key:</label>
-                  <input type="password" id="sbKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-                  
-                  <button type="button" id="saveSbConfigBtn" class="btn-secondary btn-sm">Save Supabase Config</button>
-                  <p class="config-note">Note: To use Google OAuth with your own database, configure Google provider in your Supabase Dashboard.</p>
-                </div>
-              </details>
-            </div>
           </div>
         </div>
 
-        <!-- Supported Platforms Pills -->
+        <!-- Supported Platforms Pills with Real Platform Icons -->
         <div class="hero-platforms-bar">
           <span class="bar-label">Connected Platforms:</span>
-          <div class="platform-pill"><span class="pill-dot lc-dot"></span> LeetCode</div>
-          <div class="platform-pill"><span class="pill-dot cf-dot"></span> Codeforces</div>
-          <div class="platform-pill"><span class="pill-dot cc-dot"></span> CodeChef</div>
-          <div class="platform-pill"><span class="pill-dot gh-dot"></span> GitHub</div>
+          <div class="platform-pill"><img src="assets/icons/leetcode.png" alt="LeetCode" class="pill-icon-img"> LeetCode</div>
+          <div class="platform-pill"><img src="assets/icons/codeforces.png" alt="Codeforces" class="pill-icon-img"> Codeforces</div>
+          <div class="platform-pill"><img src="assets/icons/codechef.png" alt="CodeChef" class="pill-icon-img"> CodeChef</div>
+          <div class="platform-pill"><img src="assets/icons/github.png" alt="GitHub" class="pill-icon-img"> GitHub</div>
         </div>
 
         <!-- Floating Preview Showcase -->
@@ -144,7 +110,7 @@
 
             <div class="showcase-grid">
               <div class="mini-stat-card">
-                <div class="mini-stat-icon lc-bg">LC</div>
+                <div class="mini-stat-icon lc-stat-box"><img src="assets/icons/leetcode.png" alt="LeetCode" class="stat-img-icon"></div>
                 <div>
                   <div class="mini-stat-val">750+</div>
                   <div class="mini-stat-label">LeetCode Solved</div>
@@ -152,7 +118,7 @@
               </div>
 
               <div class="mini-stat-card">
-                <div class="mini-stat-icon cf-bg">CF</div>
+                <div class="mini-stat-icon cf-stat-box"><img src="assets/icons/codeforces.png" alt="Codeforces" class="stat-img-icon"></div>
                 <div>
                   <div class="mini-stat-val">3,384</div>
                   <div class="mini-stat-label">Legendary GM</div>
@@ -160,7 +126,7 @@
               </div>
 
               <div class="mini-stat-card">
-                <div class="mini-stat-icon cc-bg">CC</div>
+                <div class="mini-stat-icon cc-stat-box"><img src="assets/icons/codechef.png" alt="CodeChef" class="stat-img-icon"></div>
                 <div>
                   <div class="mini-stat-val">7★ Div 1</div>
                   <div class="mini-stat-label">CodeChef Best #1</div>
@@ -168,7 +134,7 @@
               </div>
 
               <div class="mini-stat-card">
-                <div class="mini-stat-icon gh-bg">GH</div>
+                <div class="mini-stat-icon gh-stat-box"><img src="assets/icons/github.png" alt="GitHub" class="stat-img-icon"></div>
                 <div>
                   <div class="mini-stat-val">260k+ ⭐</div>
                   <div class="mini-stat-label">GitHub Stars</div>
@@ -230,12 +196,7 @@
       <div class="footer-container">
         <div class="footer-brand">
           <div class="brand">
-            <div class="brand-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="16 18 22 12 16 6"></polyline>
-                <polyline points="8 6 2 12 8 18"></polyline>
-              </svg>
-            </div>
+            <img src="assets/poseidon.png" alt="CodeTrack" class="brand-logo-img">
             <span>Code<span class="brand-accent">Track</span></span>
           </div>
           <p class="footer-tagline">
@@ -245,7 +206,7 @@
 
         <div class="footer-links">
           <a href="#features-preview">Features</a>
-          <a href="#landingAuthBox">Sign In / Demo</a>
+          <a href="#landingAuthBox">Sign In</a>
         </div>
 
         <div class="footer-bottom">
@@ -264,12 +225,7 @@
     <header class="navbar dashboard-navbar">
       <div class="nav-container">
         <a href="#/dashboard" class="brand">
-          <div class="brand-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="16 18 22 12 16 6"></polyline>
-              <polyline points="8 6 2 12 8 18"></polyline>
-            </svg>
-          </div>
+          <img src="assets/poseidon.png" alt="CodeTrack" class="brand-logo-img">
           <span>Code<span class="brand-accent">Track</span> <span class="badge-dash">Dashboard</span></span>
         </a>
 
@@ -320,14 +276,8 @@
                 <span>Auto-Detect from GitHub</span>
               </button>
             </div>
-            <div class="fast-connect-presets">
-              <span class="presets-label">Popular Profiles:</span>
-              <button type="button" class="preset-btn" id="presetTourist">🌟 Tourist</button>
-              <button type="button" class="preset-btn" id="presetNealWu">⚡ Neal Wu</button>
-              <button type="button" class="preset-btn" id="presetStriver">🥋 Striver</button>
-              <button type="button" class="preset-btn" id="presetColin">🎯 Colin Galen</button>
-              <button type="button" class="preset-btn" id="presetBenq">🚀 BenQ</button>
-              <button type="button" class="preset-btn btn-clear" id="presetClear">Reset</button>
+            <div>
+              <button type="button" class="preset-btn btn-clear" id="presetClear">Clear Handles</button>
             </div>
           </div>
 
@@ -335,7 +285,7 @@
             <div class="input-grid-4">
               <div class="form-group">
                 <label for="leetcodeUser">
-                  <span class="input-icon lc-text">LC</span> LeetCode
+                  <img src="assets/icons/leetcode.png" alt="LeetCode" class="input-icon-img"> LeetCode
                   <span class="platform-link-status" id="lcLinkStatus">Not Linked</span>
                 </label>
                 <input id="leetcodeUser" type="text" placeholder="Handle or profile URL" autocomplete="off" spellcheck="false">
@@ -343,7 +293,7 @@
 
               <div class="form-group">
                 <label for="codeforcesUser">
-                  <span class="input-icon cf-text">CF</span> Codeforces
+                  <img src="assets/icons/codeforces.png" alt="Codeforces" class="input-icon-img"> Codeforces
                   <span class="platform-link-status" id="cfLinkStatus">Not Linked</span>
                 </label>
                 <input id="codeforcesUser" type="text" placeholder="Handle or profile URL" autocomplete="off" spellcheck="false">
@@ -351,7 +301,7 @@
 
               <div class="form-group">
                 <label for="codechefUser">
-                  <span class="input-icon cc-text">CC</span> CodeChef
+                  <img src="assets/icons/codechef.png" alt="CodeChef" class="input-icon-img"> CodeChef
                   <span class="platform-link-status" id="ccLinkStatus">Not Linked</span>
                 </label>
                 <input id="codechefUser" type="text" placeholder="Handle or profile URL" autocomplete="off" spellcheck="false">
@@ -359,7 +309,7 @@
 
               <div class="form-group">
                 <label for="githubUser">
-                  <span class="input-icon gh-text">GH</span> GitHub
+                  <img src="assets/icons/github.png" alt="GitHub" class="input-icon-img"> GitHub
                   <span class="platform-link-status" id="ghLinkStatus">Not Linked</span>
                 </label>
                 <input id="githubUser" type="text" placeholder="Username or profile URL" autocomplete="off" spellcheck="false">
@@ -446,7 +396,9 @@
             <!-- LeetCode Card -->
             <article class="platform-card" id="cardLeetcode">
               <div class="platform-card-header">
-                <div class="platform-badge lc-badge">LC</div>
+                <div class="platform-badge lc-badge">
+                  <img src="assets/icons/leetcode.png" alt="LeetCode" class="platform-badge-img">
+                </div>
                 <div class="platform-title-info">
                   <h4>LeetCode</h4>
                   <p id="lcUser" class="platform-user-handle">Not connected</p>
@@ -495,7 +447,9 @@
             <!-- Codeforces Card -->
             <article class="platform-card" id="cardCodeforces">
               <div class="platform-card-header">
-                <div class="platform-badge cf-badge">CF</div>
+                <div class="platform-badge cf-badge">
+                  <img src="assets/icons/codeforces.png" alt="Codeforces" class="platform-badge-img">
+                </div>
                 <div class="platform-title-info">
                   <h4>Codeforces</h4>
                   <p id="cfUser" class="platform-user-handle">Not connected</p>
@@ -536,7 +490,9 @@
             <!-- CodeChef Card -->
             <article class="platform-card" id="cardCodechef">
               <div class="platform-card-header">
-                <div class="platform-badge cc-badge">CC</div>
+                <div class="platform-badge cc-badge">
+                  <img src="assets/icons/codechef.png" alt="CodeChef" class="platform-badge-img">
+                </div>
                 <div class="platform-title-info">
                   <h4>CodeChef</h4>
                   <p id="ccUser" class="platform-user-handle">Not connected</p>
@@ -582,7 +538,9 @@
             <!-- GitHub Card -->
             <article class="platform-card" id="cardGithub">
               <div class="platform-card-header">
-                <div class="platform-badge gh-badge">GH</div>
+                <div class="platform-badge gh-badge">
+                  <img src="assets/icons/github.png" alt="GitHub" class="platform-badge-img">
+                </div>
                 <div class="platform-title-info">
                   <h4>GitHub</h4>
                   <p id="ghUser" class="platform-user-handle">Not connected</p>
@@ -701,12 +659,7 @@
       <div class="footer-container">
         <div class="footer-brand">
           <div class="brand">
-            <div class="brand-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="16 18 22 12 16 6"></polyline>
-                <polyline points="8 6 2 12 8 18"></polyline>
-              </svg>
-            </div>
+            <img src="assets/poseidon.png" alt="CodeTrack" class="brand-logo-img">
             <span>Code<span class="brand-accent">Track</span></span>
           </div>
           <p class="footer-tagline">
@@ -745,12 +698,7 @@
       <div class="share-card-preview" id="shareCardPreview">
         <div class="share-top-row">
           <div class="brand">
-            <div class="brand-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="16 18 22 12 16 6"></polyline>
-                <polyline points="8 6 2 12 8 18"></polyline>
-              </svg>
-            </div>
+            <img src="assets/poseidon.png" alt="CodeTrack" class="brand-logo-img sm">
             <span>Code<span class="brand-accent">Track</span></span>
           </div>
           <span class="share-tag">Developer Analytics Card</span>

@@ -55,9 +55,45 @@ document.addEventListener("DOMContentLoaded", () => {
 // View Routing: Landing Page vs. Fresh Dashboard Page
 // ==========================================================================
 
+// ==========================================================================
+// View Routing & UI Feedback Helpers
+// ==========================================================================
+
+const DEFAULT_SB_URL = "https://znynzlweuwtehigifoqy.supabase.co";
+const DEFAULT_SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpueW56bHdldXd0ZWhpZ2lmb3F5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1OTkwOTEsImV4cCI6MjEwNjE3NTA5MX0.jkFOCo0Hp1t_SCJyfkGIARFfFGkZbUf4x3cPWzwaLuI";
+
+function showAuthNotice(message, type = "info", actionBtn = null) {
+  const el = $("authNotice");
+  if (!el) return;
+  el.className = `auth-notice-box ${type}`;
+  el.innerHTML = `<div>${message}</div>`;
+  if (actionBtn) {
+    el.appendChild(actionBtn);
+  }
+  el.style.display = "block";
+}
+
+function hideAuthNotice() {
+  const el = $("authNotice");
+  if (el) {
+    el.style.display = "none";
+    el.innerHTML = "";
+  }
+}
+
+function cleanAuthUrl() {
+  const cleanUrl = window.location.origin + window.location.pathname + "#/dashboard";
+  window.history.replaceState({}, document.title, cleanUrl);
+}
+
 function handleInitialRoute() {
   const hash = window.location.hash;
   const savedGuest = localStorage.getItem("codetrack_guest_user");
+
+  // If returning from Supabase OAuth redirect, preserve view until session resolves
+  if (hash.includes("access_token") || window.location.search.includes("code=")) {
+    return;
+  }
 
   if (hash === "#/dashboard" || (savedGuest && hash !== "#/")) {
     switchView("dashboard");
@@ -99,19 +135,16 @@ function switchView(viewName) {
 // ==========================================================================
 
 function initSupabase() {
-  const customUrl = localStorage.getItem("codetrack_sb_url");
-  const customKey = localStorage.getItem("codetrack_sb_key");
+  const customUrl = localStorage.getItem("codetrack_sb_url") || DEFAULT_SB_URL;
+  const customKey = localStorage.getItem("codetrack_sb_key") || DEFAULT_SB_KEY;
 
-  if (customUrl && $("sbUrlInput")) $("sbUrlInput").value = customUrl;
-  if (customKey && $("sbKeyInput")) $("sbKeyInput").value = customKey;
-
-  // Use custom credentials if provided by user
-  if (customUrl && customKey && window.supabase) {
+  if (window.supabase) {
     try {
       supabaseClient = window.supabase.createClient(customUrl, customKey);
       checkSupabaseSession();
     } catch (e) {
-      console.warn("Custom Supabase init failed:", e.message);
+      console.warn("Supabase init failed:", e.message);
+      checkGuestSession();
     }
   } else {
     checkGuestSession();
@@ -119,33 +152,109 @@ function initSupabase() {
 }
 
 async function checkSupabaseSession() {
-  if (!supabaseClient) return;
+  if (!supabaseClient) {
+    checkGuestSession();
+    return;
+  }
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+
+  // 1. Detect any OAuth error reported in query or hash (e.g. access_denied, invalid_request)
+  const errorMsg = urlParams.get("error_description") || urlParams.get("error") ||
+                   hashParams.get("error_description") || hashParams.get("error");
+  if (errorMsg) {
+    console.warn("OAuth redirect error:", errorMsg);
+    // Clean up URL so page refresh doesn't loop error
+    window.history.replaceState({}, document.title, window.location.origin + window.location.pathname + "#/");
+
+    showAuthNotice(
+      `⚠️ Google Sign-In Notice: ${decodeURIComponent(errorMsg).replace(/\+/g, ' ')}. Please ensure your Google account is authorized or Google OAuth is enabled in Supabase.`,
+      "error"
+    );
+    checkGuestSession();
+    return;
+  }
+
+  // 2. Detect OAuth code (PKCE) or access_token in URL
+  const code = urlParams.get("code");
+  const hasToken = hashParams.has("access_token");
+
+  if (code || hasToken) {
+    showAuthNotice("🔄 Completing Google Sign-In... Please wait.", "info");
+
+    if (code) {
+      try {
+        const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+        if (!error && data?.session?.user) {
+          cleanAuthUrl();
+          hideAuthNotice();
+          handleUserLoggedIn({
+            name: data.session.user.user_metadata?.full_name || data.session.user.email?.split("@")[0] || "User",
+            email: data.session.user.email,
+            avatar: data.session.user.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/bottts/svg?seed=coder",
+            provider: "google"
+          });
+          return;
+        }
+      } catch (err) {
+        console.warn("Manual exchangeCodeForSession notice:", err.message);
+      }
+    }
+  }
+
+  // 3. Check for existing Supabase session
   try {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session?.user) {
+      cleanAuthUrl();
+      hideAuthNotice();
       handleUserLoggedIn({
         name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "User",
         email: session.user.email,
         avatar: session.user.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/bottts/svg?seed=coder",
         provider: "google"
       });
-    } else {
-      checkGuestSession();
+      return;
     }
-
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        handleUserLoggedIn({
-          name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "User",
-          email: session.user.email,
-          avatar: session.user.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/bottts/svg?seed=coder",
-          provider: "google"
-        });
-      }
-    });
   } catch (err) {
     console.warn("Supabase session check error:", err.message);
+  }
+
+  // 4. Listen for auth changes
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+      cleanAuthUrl();
+      hideAuthNotice();
+      handleUserLoggedIn({
+        name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "User",
+        email: session.user.email,
+        avatar: session.user.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/bottts/svg?seed=coder",
+        provider: "google"
+      });
+    }
+  });
+
+  // 5. Safety timeout if OAuth callback was requested but not resolved in 4 seconds
+  if (code || hasToken) {
+    setTimeout(async () => {
+      if (!currentUser) {
+        const { data: { session } } = await supabaseClient.auth.getSession().catch(() => ({ data: {} }));
+        if (session?.user) {
+          cleanAuthUrl();
+          hideAuthNotice();
+          handleUserLoggedIn({
+            name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "User",
+            email: session.user.email,
+            avatar: session.user.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/bottts/svg?seed=coder",
+            provider: "google"
+          });
+        } else {
+          showAuthNotice("Google session verification took longer than expected. Please try clicking 'Continue with Google' again.", "error");
+        }
+      }
+    }, 4000);
+  } else {
     checkGuestSession();
   }
 }
@@ -162,25 +271,51 @@ function checkGuestSession() {
 }
 
 async function handleGoogleLogin() {
-  if (!supabaseClient) {
-    alert(
-      "To connect directly to Google OAuth, please configure your Supabase Project URL and Anon Key in '⚙️ Supabase Project Settings' below.\n\nAlternatively, click 'Enter with Instant Demo / Guest Mode' to immediately enter your fresh dashboard!"
-    );
-    const details = document.querySelector(".supabase-config-box details");
-    if (details) details.open = true;
+  hideAuthNotice();
+
+  if (window.location.protocol === "file:") {
+    showAuthNotice("⚠️ Google OAuth requires running on a web server (like http://localhost:3000), not direct file opening (file://).", "error");
     return;
   }
 
+  if (!supabaseClient) {
+    try {
+      supabaseClient = window.supabase.createClient(DEFAULT_SB_URL, DEFAULT_SB_KEY);
+    } catch (e) {
+      showAuthNotice("Could not connect to Supabase: " + e.message, "error");
+      return;
+    }
+  }
+
+  const btn = $("landingGoogleSignInBtn");
+  const gText = $("googleBtnText");
+  const origText = gText ? gText.textContent : "Continue with Google";
+  if (btn) btn.disabled = true;
+  if (gText) gText.textContent = "Connecting to Google...";
+
   try {
-    const { error } = await supabaseClient.auth.signInWithOAuth({
+    const redirectUrl = window.location.origin + window.location.pathname;
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent"
+        }
       }
     });
+
     if (error) throw error;
+    if (data?.url) {
+      window.location.href = data.url;
+    }
   } catch (err) {
-    alert("Google Sign-In Error: " + err.message);
+    console.error("Google sign in error:", err);
+    if (btn) btn.disabled = false;
+    if (gText) gText.textContent = origText;
+
+    showAuthNotice(`Google Sign-In Error: ${err.message}`, "error");
   }
 }
 
@@ -347,20 +482,6 @@ function setupEventListeners() {
   });
 
   $("landingGoogleSignInBtn")?.addEventListener("click", handleGoogleLogin);
-  $("landingGuestSignInBtn")?.addEventListener("click", handleGuestLogin);
-
-  $("saveSbConfigBtn")?.addEventListener("click", () => {
-    const url = $("sbUrlInput").value.trim();
-    const key = $("sbKeyInput").value.trim();
-    if (!url || !key) {
-      alert("Please provide both Supabase Project URL and Anon Key.");
-      return;
-    }
-    localStorage.setItem("codetrack_sb_url", url);
-    localStorage.setItem("codetrack_sb_key", key);
-    alert("Supabase configuration saved! Initializing client...");
-    initSupabase();
-  });
 
   // Dashboard Nav Buttons
   $("dashSignOutBtn")?.addEventListener("click", signOut);
@@ -377,12 +498,6 @@ function setupEventListeners() {
   // Profile Loading & Presets
   $("loadBtn")?.addEventListener("click", () => loadProfiles());
   $("refreshPlatformsBtn")?.addEventListener("click", () => loadProfiles());
-
-  $("presetTourist")?.addEventListener("click", () => applyPreset("tourist"));
-  $("presetNealWu")?.addEventListener("click", () => applyPreset("nealwu"));
-  $("presetStriver")?.addEventListener("click", () => applyPreset("striver"));
-  $("presetColin")?.addEventListener("click", () => applyPreset("colin"));
-  $("presetBenq")?.addEventListener("click", () => applyPreset("benq"));
   $("presetClear")?.addEventListener("click", () => clearAll());
 
   // Contest Filtering Tabs
@@ -1050,13 +1165,14 @@ function renderUpcomingContests() {
     const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
     const countdownStr = days > 0 ? `Starts in ${days}d ${hours}h` : `Starts in ${hours}h`;
 
+    const iconSrc = c.platformCode === "CF" ? "assets/icons/codeforces.png" : c.platformCode === "CC" ? "assets/icons/codechef.png" : "assets/icons/leetcode.png";
     const tagBg = c.platformCode === "CF" ? "tag-cf" : c.platformCode === "CC" ? "tag-cc" : "lc-bg";
 
     return `
       <div class="contest-schedule-card">
         <div>
           <div class="cs-head">
-            <span class="cs-platform-pill ${tagBg}">${c.platformCode}</span>
+            <span class="cs-platform-pill ${tagBg}"><img src="${iconSrc}" class="contest-pill-icon" alt="${c.platformCode}"> ${c.platformCode}</span>
             <span class="cs-countdown">${countdownStr}</span>
           </div>
           <h4 class="cs-name">${escapeHtml(c.name)}</h4>
@@ -1156,11 +1272,12 @@ function renderContests() {
       ? new Date(c.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
       : "—";
     const tagClass = c.platformCode === "CF" ? "tag-cf" : c.platformCode === "CC" ? "tag-cc" : "tag-lc";
+    const iconSrc = c.platformCode === "CF" ? "assets/icons/codeforces.png" : c.platformCode === "CC" ? "assets/icons/codechef.png" : "assets/icons/leetcode.png";
 
     return `
       <div class="contest-item">
         <div class="contest-left">
-          <span class="contest-platform-tag ${tagClass}">${c.platformCode}</span>
+          <span class="contest-platform-tag ${tagClass}"><img src="${iconSrc}" class="contest-item-icon" alt="${c.platformCode}"> ${c.platformCode}</span>
           <div class="contest-details">
             <h4>${escapeHtml(c.contestName)}</h4>
             <p class="contest-date">${dateStr} &bull; ${escapeHtml(c.platform)}</p>
