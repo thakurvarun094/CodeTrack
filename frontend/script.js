@@ -411,53 +411,11 @@ function updatePlatformLinkBadges() {
   setStatus("ghLinkStatus", $("githubUser")?.value);
 }
 
-async function autoDetectFromGithub() {
-  let gh = $("githubUser")?.value.trim();
-  if (!gh) {
-    gh = prompt("Enter your GitHub username to auto-detect your coding handles:");
-    if (!gh) return;
-  }
-  gh = cleanHandle(gh);
-  $("githubUser").value = gh;
-
-  showStatus("Scanning GitHub profile, bio and README for coding handles...", "info");
-  try {
-    const res = await fetch(`/api/github/detect/${encodeURIComponent(gh)}`);
-    if (!res.ok) throw new Error("Could not fetch GitHub user");
-    const detected = await res.json();
-
-    let found = 0;
-    if (detected.leetcode) {
-      $("leetcodeUser").value = detected.leetcode;
-      found++;
-    }
-    if (detected.codeforces) {
-      $("codeforcesUser").value = detected.codeforces;
-      found++;
-    }
-    if (detected.codechef) {
-      $("codechefUser").value = detected.codechef;
-      found++;
-    }
-
-    saveHandles();
-    updatePlatformLinkBadges();
-
-    if (found > 0) {
-      showStatus(`✓ Auto-detected ${found} platform handles from GitHub! Click "Sync & Load Real Data".`, "success");
-    } else {
-      showStatus(`✓ GitHub profile linked. Set other handles or pick a 1-click preset.`, "success");
-    }
-  } catch (err) {
-    showStatus(`GitHub scan: ${err.message}. You can still paste or pick a preset.`, "error");
-  }
-}
-
 function setupEventListeners() {
   $("darkModeToggle")?.addEventListener("click", toggleDarkMode);
   $("navThemeToggleLanding")?.addEventListener("click", toggleDarkMode);
   $("navThemeToggleDash")?.addEventListener("click", toggleDarkMode);
-  
+
   // Smooth scroll for all anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
@@ -491,9 +449,6 @@ function setupEventListeners() {
   $("closeShareModalBtn")?.addEventListener("click", closeShareModal);
   $("closeShareModalBtn2")?.addEventListener("click", closeShareModal);
   $("copyShareTextBtn")?.addEventListener("click", copyShareSummary);
-
-  // Fast Auto-Detect
-  $("autoDetectGhBtn")?.addEventListener("click", autoDetectFromGithub);
 
   // Profile Loading & Presets
   $("loadBtn")?.addEventListener("click", () => loadProfiles());
