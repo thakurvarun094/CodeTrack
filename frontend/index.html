@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeTrack — Unified Coding Command Center & Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Supabase JS Client via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- =====================================================================
+       PAGE 1: LANDING & LOGIN PAGE (Initial View — No Dashboard Clutter)
+       ===================================================================== -->
+  <div id="landingView">
+    <!-- Landing Top Bar -->
+    <header class="navbar">
+      <div class="nav-container">
+        <a href="#/" class="brand">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </div>
+          <span>Code<span class="brand-accent">Track</span></span>
+        </a>
+
+        <nav class="nav-links">
+          <a href="#features-preview">Features</a>
+          <a href="#landingAuthBox">Sign In</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="nav-theme-toggle" id="navThemeToggleLanding" title="Toggle Dark/Light Mode" aria-label="Toggle theme">🌙</button>
+          <button id="navLoginTriggerBtn" class="btn-primary btn-sm">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            <span>Sign In / Enter</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Landing Hero with Prominent Sign In Card -->
+    <section class="landing-hero">
+      <div class="hero-bg-accent"></div>
+      <div class="hero-container">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          <span>Unified Developer Analytics &bull; Google OAuth via Supabase &bull; 4 Platforms</span>
+        </div>
+
+        <h1 class="hero-title">
+          Track your coding journey across<br>
+          <span class="hero-gradient">LeetCode, Codeforces, CodeChef & GitHub</span>
+        </h1>
+
+        <p class="hero-desc">
+          Welcome to <strong>CodeTrack</strong>. Connect your profiles to benchmark solved problems across Easy, Medium, and Hard, analyze accurate contest rankings, monitor upcoming contest countdowns, and level up with your personal AI Coding Coach.
+        </p>
+
+        <!-- Prominent White-Blue Login Card in Hero -->
+        <div class="landing-auth-card" id="landingAuthBox">
+          <div class="auth-card-head">
+            <div class="brand-icon sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+            <div>
+              <h3>Sign In to Enter Dashboard</h3>
+              <p class="auth-sub">Choose your sign-in method to access your unified analytics</p>
+            </div>
+          </div>
+
+          <div class="auth-buttons-stack">
+            <!-- Google Sign In via Supabase -->
+            <button id="landingGoogleSignInBtn" class="btn-google-oauth">
+              <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+
+            <div class="auth-divider">
+              <span>OR ENTER DIRECTLY</span>
+            </div>
+
+            <!-- Instant Demo / Guest Mode -->
+            <button id="landingGuestSignInBtn" class="btn-primary btn-block">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>Enter with Instant Demo / Guest Mode &rarr;</span>
+            </button>
+
+            <!-- Supabase Custom Keys Settings -->
+            <div class="supabase-config-box">
+              <details>
+                <summary>⚙️ Supabase Project Settings (Optional custom keys)</summary>
+                <div class="sb-fields-form">
+                  <label for="sbUrlInput">Supabase Project URL:</label>
+                  <input type="text" id="sbUrlInput" placeholder="https://your-project.supabase.co">
+                  
+                  <label for="sbKeyInput">Supabase Anon Key:</label>
+                  <input type="password" id="sbKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                  
+                  <button type="button" id="saveSbConfigBtn" class="btn-secondary btn-sm">Save Supabase Config</button>
+                  <p class="config-note">Note: To use Google OAuth with your own database, configure Google provider in your Supabase Dashboard.</p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supported Platforms Pills -->
+        <div class="hero-platforms-bar">
+          <span class="bar-label">Connected Platforms:</span>
+          <div class="platform-pill"><span class="pill-dot lc-dot"></span> LeetCode</div>
+          <div class="platform-pill"><span class="pill-dot cf-dot"></span> Codeforces</div>
+          <div class="platform-pill"><span class="pill-dot cc-dot"></span> CodeChef</div>
+          <div class="platform-pill"><span class="pill-dot gh-dot"></span> GitHub</div>
+        </div>
+
+        <!-- Floating Preview Showcase -->
+        <div class="hero-showcase">
+          <div class="showcase-card">
+            <div class="showcase-header">
+              <div class="showcase-title">
+                <span class="pulse-indicator"></span>
+                <span>Live Multi-Platform Data Stream</span>
+              </div>
+              <div class="showcase-tags">
+                <span class="tag-live">Active</span>
+                <span class="tag-status">4 Ecosystems Integrated</span>
+              </div>
+            </div>
+
+            <div class="showcase-grid">
+              <div class="mini-stat-card">
+                <div class="mini-stat-icon lc-bg">LC</div>
+                <div>
+                  <div class="mini-stat-val">750+</div>
+                  <div class="mini-stat-label">LeetCode Solved</div>
+                </div>
+              </div>
+
+              <div class="mini-stat-card">
+                <div class="mini-stat-icon cf-bg">CF</div>
+                <div>
+                  <div class="mini-stat-val">3,384</div>
+                  <div class="mini-stat-label">Legendary GM</div>
+                </div>
+              </div>
+
+              <div class="mini-stat-card">
+                <div class="mini-stat-icon cc-bg">CC</div>
+                <div>
+                  <div class="mini-stat-val">7★ Div 1</div>
+                  <div class="mini-stat-label">CodeChef Best #1</div>
+                </div>
+              </div>
+
+              <div class="mini-stat-card">
+                <div class="mini-stat-icon gh-bg">GH</div>
+                <div>
+                  <div class="mini-stat-val">260k+ ⭐</div>
+                  <div class="mini-stat-label">GitHub Stars</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Landing Features Highlights Section -->
+    <section id="features-preview" class="site-section bg-soft">
+      <div class="section-container">
+        <div class="section-badge">WHY CODETRAK</div>
+        <h2 class="section-title">Everything you need to benchmark your growth</h2>
+        <p class="section-subtitle">
+          Stop switching between 4 different browser tabs. Get comprehensive problem-solving statistics, verified contest rankings, and real-time activity tracking in one intuitive place.
+        </p>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <h3>Supabase Google Authentication</h3>
+            <p>Sign in seamlessly with Google via Supabase OAuth. Save your handles permanently so your dashboard is instantly ready on every visit.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            </div>
+            <h3>Accurate Contest Ranking Algorithm</h3>
+            <p>Precisely extracts contest rank histories, rating deltas, official star categories (1★ to 7★), and official CodeChef division classifications (Div 1 through Div 4).</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            </div>
+            <h3>Smart Contest Calendar</h3>
+            <p>Aggregates upcoming contests from LeetCode, Codeforces, and CodeChef in one unified calendar with live countdowns and direct registration links.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            </div>
+            <h3>AI Coding Coach & Topic Mastery</h3>
+            <p>Analyzes your solved problems, highlights weak algorithms (DP, Graphs, Trees), and suggests tailored problem sets to accelerate your rating climb.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Landing Footer -->
+    <footer class="site-footer">
+      <div class="footer-container">
+        <div class="footer-brand">
+          <div class="brand">
+            <div class="brand-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+            <span>Code<span class="brand-accent">Track</span></span>
+          </div>
+          <p class="footer-tagline">
+            The ultimate competitive programming, interview prep, and open source tracker with white-blue design.
+          </p>
+        </div>
+
+        <div class="footer-links">
+          <a href="#features-preview">Features</a>
+          <a href="#landingAuthBox">Sign In / Demo</a>
+        </div>
+
+        <div class="footer-bottom">
+          <p>&copy; 2026 CodeTrack. Data provided via official public APIs, verified GraphQL endpoints, and Supabase Auth.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+
+  <!-- =====================================================================
+       PAGE 2: FRESH DASHBOARD WEBPAGE (Only Shown After Login — No Intro!)
+       ===================================================================== -->
+  <div id="dashboardView" style="display: none;">
+    <!-- Dashboard Top Bar -->
+    <header class="navbar dashboard-navbar">
+      <div class="nav-container">
+        <a href="#/dashboard" class="brand">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </div>
+          <span>Code<span class="brand-accent">Track</span> <span class="badge-dash">Dashboard</span></span>
+        </a>
+
+        <nav class="nav-links">
+          <a href="#dash-overview">Overview</a>
+          <a href="#dash-platforms">Platforms</a>
+          <a href="#dash-heatmap">Activity Heatmap</a>
+          <a href="#dash-calendar">Contest Calendar</a>
+          <a href="#dash-history">Contest History</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="nav-theme-toggle" id="navThemeToggleDash" title="Toggle Dark/Light Mode" aria-label="Toggle theme">🌙</button>
+          <button id="openShareModalBtn" class="btn-outline btn-sm" title="Share profile card">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            <span>Share</span>
+          </button>
+
+          <div class="user-nav-pill">
+            <img id="dashUserAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=alexcoder" alt="Avatar" class="nav-avatar">
+            <span id="dashUserName" class="nav-user-name">Alex Coder</span>
+            <button id="dashSignOutBtn" class="btn-text-sm" title="Sign out and return to landing page">Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Command Center -->
+    <main class="tracker-main">
+      <div class="section-container">
+        
+        <!-- Profile Synchronization Form -->
+        <div class="tracker-header-card" id="dash-connect">
+          <div class="tracker-header-info">
+            <div class="section-badge">CODING COMMAND CENTER</div>
+            <h2>Connected Coding Platforms</h2>
+            <p class="tracker-sub">
+              Link your coding platforms without hassle. Paste full profile URLs or usernames, auto-detect handles from your GitHub, or select 1-click presets below.
+            </p>
+          </div>
+
+          <!-- Quick Connect & Auto-Detect Banner -->
+          <div class="fast-connect-bar">
+            <div class="fast-connect-left">
+              <span class="fast-connect-title">⚡ 1-Click Connect:</span>
+              <button type="button" class="btn-fast-detect" id="autoDetectGhBtn" title="Scan GitHub bio and README to find LeetCode, Codeforces & CodeChef handles">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Auto-Detect from GitHub</span>
+              </button>
+            </div>
+            <div class="fast-connect-presets">
+              <span class="presets-label">Popular Profiles:</span>
+              <button type="button" class="preset-btn" id="presetTourist">🌟 Tourist</button>
+              <button type="button" class="preset-btn" id="presetNealWu">⚡ Neal Wu</button>
+              <button type="button" class="preset-btn" id="presetStriver">🥋 Striver</button>
+              <button type="button" class="preset-btn" id="presetColin">🎯 Colin Galen</button>
+              <button type="button" class="preset-btn" id="presetBenq">🚀 BenQ</button>
+              <button type="button" class="preset-btn btn-clear" id="presetClear">Reset</button>
+            </div>
+          </div>
+
+          <div class="connect-form">
+            <div class="input-grid-4">
+              <div class="form-group">
+                <label for="leetcodeUser">
+                  <span class="input-icon lc-text">LC</span> LeetCode
+                  <span class="platform-link-status" id="lcLinkStatus">Not Linked</span>
+                </label>
+                <input id="leetcodeUser" type="text" placeholder="Handle or profile URL" autocomplete="off" spellcheck="false">
+              </div>
+
+              <div class="form-group">
+                <label for="codeforcesUser">
+                  <span class="input-icon cf-text">CF</span> Codeforces
+                  <span class="platform-link-status" id="cfLinkStatus">Not Linked</span>
+                </label>
+                <input id="codeforcesUser" type="text" placeholder="Handle or profile URL" autocomplete="off" spellcheck="false">
+              </div>
+
+              <div class="form-group">
+                <label for="codechefUser">
+                  <span class="input-icon cc-text">CC</span> CodeChef
+                  <span class="platform-link-status" id="ccLinkStatus">Not Linked</span>
+                </label>
+                <input id="codechefUser" type="text" placeholder="Handle or profile URL" autocomplete="off" spellcheck="false">
+              </div>
+
+              <div class="form-group">
+                <label for="githubUser">
+                  <span class="input-icon gh-text">GH</span> GitHub
+                  <span class="platform-link-status" id="ghLinkStatus">Not Linked</span>
+                </label>
+                <input id="githubUser" type="text" placeholder="Username or profile URL" autocomplete="off" spellcheck="false">
+              </div>
+            </div>
+
+            <div class="connect-helper-row">
+              <span class="connect-helper-text">💡 <strong>Smart Link:</strong> Paste any full profile URL (e.g. <code>leetcode.com/u/neal_wu</code>) and CodeTrack will auto-extract the handle. Handles are permanently remembered.</span>
+              <div class="save-handle-pill" id="handleSaveIndicator">
+                <span id="saveStatusDot"></span>
+                <span id="saveStatusText">Handles auto-saved</span>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button id="loadBtn" class="btn-primary btn-block">
+                <span id="btnIcon">⚡</span>
+                <span id="btnText">Sync & Load Real Data</span>
+              </button>
+            </div>
+
+            <div id="statusBanner" class="status-banner" style="display: none;">
+              <span id="statusText"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Essential Feature #1: Unified Coding Dashboard Overview -->
+        <section class="overview-section" id="dash-overview">
+          <div class="overview-grid-4">
+            <article class="overview-card">
+              <div class="overview-header">
+                <span class="overview-label">Total Solved</span>
+                <span class="overview-icon">🎯</span>
+              </div>
+              <strong class="overview-value" id="totalSolved">—</strong>
+              <span class="overview-desc" id="totalSolvedSub">Across LC, CF & CC</span>
+            </article>
+
+            <article class="overview-card">
+              <div class="overview-header">
+                <span class="overview-label">Contests Participated</span>
+                <span class="overview-icon">🏆</span>
+              </div>
+              <strong class="overview-value" id="contests">—</strong>
+              <span class="overview-desc" id="contestsSub">Rated contests completed</span>
+            </article>
+
+            <article class="overview-card">
+              <div class="overview-header">
+                <span class="overview-label">Active Streak</span>
+                <span class="overview-icon">🔥</span>
+              </div>
+              <strong class="overview-value" id="streak">—</strong>
+              <span class="overview-desc" id="activeDaysSub">Consistent practice days</span>
+            </article>
+
+            <article class="overview-card highlight-card">
+              <div class="overview-header">
+                <span class="overview-label">Consistency Score</span>
+                <span class="overview-icon">⚡</span>
+              </div>
+              <strong class="overview-value" id="consistencyScore">—</strong>
+              <span class="overview-desc" id="consistencyGrade">Algorithm consistency</span>
+            </article>
+          </div>
+        </section>
+
+
+        <!-- Platform Cards Grid (4 Columns: LeetCode, Codeforces, CodeChef, GitHub) -->
+        <section class="platforms-dashboard-section" id="dash-platforms">
+          <div class="section-title-row">
+            <div>
+              <span class="section-badge">INDIVIDUAL PROFILES</span>
+              <h3>Platform Breakdown</h3>
+            </div>
+            <button id="refreshPlatformsBtn" class="btn-outline btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>Manual Refresh</span>
+            </button>
+          </div>
+
+          <div class="platform-cards-grid-4">
+            <!-- LeetCode Card -->
+            <article class="platform-card" id="cardLeetcode">
+              <div class="platform-card-header">
+                <div class="platform-badge lc-badge">LC</div>
+                <div class="platform-title-info">
+                  <h4>LeetCode</h4>
+                  <p id="lcUser" class="platform-user-handle">Not connected</p>
+                </div>
+                <a id="lcLink" href="https://leetcode.com" target="_blank" rel="noreferrer" class="profile-link-btn" title="Open LeetCode Profile">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </a>
+              </div>
+
+              <div class="platform-main-metric">
+                <div class="metric-number" id="lcSolved">—</div>
+                <div class="metric-label">problems solved</div>
+              </div>
+
+              <div class="difficulty-breakdown">
+                <div class="diff-pill easy">
+                  <span>Easy</span>
+                  <b id="lcEasy">—</b>
+                </div>
+                <div class="diff-pill medium">
+                  <span>Medium</span>
+                  <b id="lcMedium">—</b>
+                </div>
+                <div class="diff-pill hard">
+                  <span>Hard</span>
+                  <b id="lcHard">—</b>
+                </div>
+              </div>
+
+              <div class="platform-meta-grid">
+                <div class="meta-item">
+                  <span class="meta-label">Rating</span>
+                  <span class="meta-val" id="lcRating">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Global Rank</span>
+                  <span class="meta-val" id="lcGlobalRank">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Contests</span>
+                  <span class="meta-val" id="lcContests">—</span>
+                </div>
+              </div>
+            </article>
+
+            <!-- Codeforces Card -->
+            <article class="platform-card" id="cardCodeforces">
+              <div class="platform-card-header">
+                <div class="platform-badge cf-badge">CF</div>
+                <div class="platform-title-info">
+                  <h4>Codeforces</h4>
+                  <p id="cfUser" class="platform-user-handle">Not connected</p>
+                </div>
+                <a id="cfLink" href="https://codeforces.com" target="_blank" rel="noreferrer" class="profile-link-btn" title="Open Codeforces Profile">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </a>
+              </div>
+
+              <div class="platform-main-metric">
+                <div class="metric-number" id="cfRating">—</div>
+                <div class="metric-label" id="cfRankTitle">current rating</div>
+              </div>
+
+              <div class="rating-bar-container">
+                <div class="rating-sub-row">
+                  <span>Peak Rating: <b id="cfMax">—</b></span>
+                  <span>Best Rank: <b id="cfBest">—</b></span>
+                </div>
+              </div>
+
+              <div class="platform-meta-grid">
+                <div class="meta-item">
+                  <span class="meta-label">Rank Title</span>
+                  <span class="meta-val" id="cfRank">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Contests</span>
+                  <span class="meta-val" id="cfContests">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Unique Solved</span>
+                  <span class="meta-val" id="cfSolved">—</span>
+                </div>
+              </div>
+            </article>
+
+            <!-- CodeChef Card -->
+            <article class="platform-card" id="cardCodechef">
+              <div class="platform-card-header">
+                <div class="platform-badge cc-badge">CC</div>
+                <div class="platform-title-info">
+                  <h4>CodeChef</h4>
+                  <p id="ccUser" class="platform-user-handle">Not connected</p>
+                </div>
+                <a id="ccLink" href="https://codechef.com" target="_blank" rel="noreferrer" class="profile-link-btn" title="Open CodeChef Profile">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </a>
+              </div>
+
+              <div class="platform-main-metric">
+                <div class="metric-number" id="ccRating">—</div>
+                <div class="stars-display" id="ccStars">
+                  <span class="star-empty">No rating loaded</span>
+                </div>
+              </div>
+
+              <div class="codechef-badges-row">
+                <span class="cc-tag division-tag" id="ccDivision">Division —</span>
+                <span class="cc-tag rank-tag" id="ccGlobalRank">Global: —</span>
+                <span class="cc-tag country-tag" id="ccCountryRank">Country: —</span>
+              </div>
+
+              <div class="platform-meta-grid">
+                <div class="meta-item">
+                  <span class="meta-label">Peak Rating</span>
+                  <span class="meta-val" id="ccMax">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Best Rank</span>
+                  <span class="meta-val" id="ccBest">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Contests</span>
+                  <span class="meta-val" id="ccContests">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Total Solved</span>
+                  <span class="meta-val" id="ccSolved">—</span>
+                </div>
+              </div>
+            </article>
+
+            <!-- GitHub Card -->
+            <article class="platform-card" id="cardGithub">
+              <div class="platform-card-header">
+                <div class="platform-badge gh-badge">GH</div>
+                <div class="platform-title-info">
+                  <h4>GitHub</h4>
+                  <p id="ghUser" class="platform-user-handle">Not connected</p>
+                </div>
+                <a id="ghLink" href="https://github.com" target="_blank" rel="noreferrer" class="profile-link-btn" title="Open GitHub Profile">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </a>
+              </div>
+
+              <div class="platform-main-metric">
+                <div class="metric-number" id="ghStars">—</div>
+                <div class="metric-label">total stars gained</div>
+              </div>
+
+              <div class="github-langs-row" id="ghLanguages">
+                <span class="lang-tag">No repos loaded</span>
+              </div>
+
+              <div class="platform-meta-grid">
+                <div class="meta-item">
+                  <span class="meta-label">Public Repos</span>
+                  <span class="meta-val" id="ghRepos">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Followers</span>
+                  <span class="meta-val" id="ghFollowers">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Total Forks</span>
+                  <span class="meta-val" id="ghForks">—</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Essential Feature #2: Coding Activity Heatmap -->
+        <section id="dash-heatmap" class="heatmap-section">
+          <div class="section-title-row">
+            <div>
+              <span class="section-badge">CONSISTENCY CALENDAR</span>
+              <h3>Unified 365-Day Activity Heatmap</h3>
+            </div>
+            <div class="heatmap-stats-pill">
+              <span id="activityTotal">0</span> total submissions logged
+            </div>
+          </div>
+
+          <div class="heatmap-card">
+            <div class="heatmap-legend-bar">
+              <span class="legend-title">Combined Platform Submissions, Repos & Contest Dates</span>
+              <div class="heatmap-legend">
+                <span>Less</span>
+                <i class="cell l0"></i>
+                <i class="cell l1"></i>
+                <i class="cell l2"></i>
+                <i class="cell l3"></i>
+                <i class="cell l4"></i>
+                <span>More</span>
+              </div>
+            </div>
+            <div class="heatmap-scroll-area">
+              <div id="heatmap" class="heatmap"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Unique Feature: Smart Upcoming Contest Calendar -->
+        <section id="dash-calendar" class="site-section-inline">
+          <div class="section-title-row">
+            <div>
+              <span class="section-badge">SCHEDULE & REGISTRATION</span>
+              <h3>Smart Contest Calendar</h3>
+            </div>
+            <span class="badge-pill-light">Upcoming Contests</span>
+          </div>
+
+          <div class="upcoming-calendar-grid" id="upcomingContestsGrid">
+            <div class="contest-schedule-card loading-card">
+              <div class="pulse-indicator"></div>
+              <span>Fetching live upcoming contests from LeetCode, Codeforces & CodeChef...</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Past Contest Performance Timeline -->
+        <section id="dash-history" class="contests-section">
+          <div class="section-title-row">
+            <div>
+              <span class="section-badge">COMPETITIVE PROGRAMMING</span>
+              <h3>Historical Contest Performance</h3>
+            </div>
+            <div class="contest-filter-tabs">
+              <button class="filter-tab active" data-filter="all">All Platforms</button>
+              <button class="filter-tab" data-filter="codeforces">Codeforces</button>
+              <button class="filter-tab" data-filter="codechef">CodeChef</button>
+              <button class="filter-tab" data-filter="leetcode">LeetCode</button>
+            </div>
+          </div>
+
+          <div class="contest-card-wrapper">
+            <div id="contestList" class="contest-list">
+              <div class="empty-state">
+                <div class="empty-icon">🏆</div>
+                <p>Load your Codeforces or CodeChef profiles above to view verified contest rankings and rating trajectories.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Dashboard Footer -->
+    <footer class="site-footer">
+      <div class="footer-container">
+        <div class="footer-brand">
+          <div class="brand">
+            <div class="brand-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+            <span>Code<span class="brand-accent">Track</span></span>
+          </div>
+          <p class="footer-tagline">
+            Active Developer Dashboard &bull; LeetCode, Codeforces, CodeChef & GitHub
+          </p>
+        </div>
+
+        <div class="footer-links">
+          <a href="#dash-overview">Overview</a>
+          <a href="#dash-platforms">Platforms</a>
+          <a href="#dash-heatmap">Activity Heatmap</a>
+          <a href="#dash-calendar">Contest Calendar</a>
+          <a href="#dash-history">Contest History</a>
+        </div>
+
+        <div class="footer-bottom">
+          <p>&copy; 2026 CodeTrack. Data provided via official public APIs, verified GraphQL endpoints, and Supabase Auth.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+
+  <!-- =====================================================================
+       SHARED MODALS (Share Profile & Supabase Auth)
+       ===================================================================== -->
+
+  <!-- Shareable Profile Modal -->
+  <div id="shareModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Shareable Coding Profile</h3>
+        <button id="closeShareModalBtn" class="modal-close-btn">&times;</button>
+      </div>
+
+      <div class="share-card-preview" id="shareCardPreview">
+        <div class="share-top-row">
+          <div class="brand">
+            <div class="brand-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+            <span>Code<span class="brand-accent">Track</span></span>
+          </div>
+          <span class="share-tag">Developer Analytics Card</span>
+        </div>
+
+        <div class="share-user-info">
+          <h2 id="shareName">Coder</h2>
+          <p id="shareHandles">LeetCode &bull; Codeforces &bull; CodeChef &bull; GitHub</p>
+        </div>
+
+        <div class="share-stats-grid">
+          <div class="share-stat">
+            <span class="slabel">Total Solved</span>
+            <strong class="sval" id="shareSolved">0</strong>
+          </div>
+          <div class="share-stat">
+            <span class="slabel">Contests</span>
+            <strong class="sval" id="shareContests">0</strong>
+          </div>
+          <div class="share-stat">
+            <span class="slabel">Best Rank</span>
+            <strong class="sval" id="shareRank">—</strong>
+          </div>
+          <div class="share-stat">
+            <span class="slabel">Streak</span>
+            <strong class="sval" id="shareStreak">0 days</strong>
+          </div>
+        </div>
+
+        <div class="share-footer-row">
+          <span>Tracked with CodeTrack &bull; http://localhost:3000</span>
+          <span>Verified Platform Data</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="copyShareTextBtn" class="btn-primary btn-sm">Copy Share Link & Summary</button>
+        <button id="closeShareModalBtn2" class="btn-secondary btn-sm">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <button id="darkModeToggle" class="dark-mode-toggle" title="Toggle Dark Mode">🌙</button>
+  <script src="script.js"></script>
+</body>
+</html>
