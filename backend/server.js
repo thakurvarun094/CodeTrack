@@ -38,6 +38,11 @@ app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`CodeTrack running at http://localhost:${PORT}`);
-});
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`CodeTrack running at http://localhost:${PORT}`);
+  });
+}
+
