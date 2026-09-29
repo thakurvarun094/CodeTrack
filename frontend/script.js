@@ -127,6 +127,7 @@ function switchView(viewName) {
       window.location.hash = "#/";
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
+    updateLandingUserUI();
   }
 }
 
@@ -207,14 +208,19 @@ async function checkSupabaseSession() {
   try {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session?.user) {
-      cleanAuthUrl();
-      hideAuthNotice();
-      handleUserLoggedIn({
+      currentUser = {
         name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "User",
         email: session.user.email,
         avatar: session.user.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/bottts/svg?seed=coder",
         provider: "google"
-      });
+      };
+      hideAuthNotice();
+      if (window.location.hash === "#/dashboard" || code || hasToken) {
+        cleanAuthUrl();
+        switchView("dashboard");
+      } else {
+        updateLandingUserUI();
+      }
       return;
     }
   } catch (err) {
@@ -224,14 +230,21 @@ async function checkSupabaseSession() {
   // 4. Listen for auth changes
   supabaseClient.auth.onAuthStateChange((event, session) => {
     if (session?.user) {
-      cleanAuthUrl();
-      hideAuthNotice();
-      handleUserLoggedIn({
+      currentUser = {
         name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "User",
         email: session.user.email,
         avatar: session.user.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/bottts/svg?seed=coder",
         provider: "google"
-      });
+      };
+      cleanAuthUrl();
+      hideAuthNotice();
+      if (window.location.hash === "#/dashboard" || event === "SIGNED_IN") {
+        switchView("dashboard");
+      } else {
+        updateLandingUserUI();
+      }
+    } else if (event === "SIGNED_OUT") {
+      handleUserLoggedOut();
     }
   });
 
@@ -268,6 +281,7 @@ function checkGuestSession() {
       currentUser = null;
     }
   }
+  updateLandingUserUI();
 }
 
 async function handleGoogleLogin() {
@@ -351,11 +365,40 @@ function handleUserLoggedOut() {
 
 function updateDashboardUserUI() {
   if (currentUser) {
-    if ($("dashUserAvatar")) $("dashUserAvatar").src = currentUser.avatar;
-    if ($("dashUserName")) $("dashUserName").textContent = currentUser.name;
+    if ($("dashUserAvatar")) $("dashUserAvatar").src = currentUser.avatar || "https://api.dicebear.com/7.x/bottts/svg?seed=coder";
+    if ($("dashUserName")) $("dashUserName").textContent = currentUser.name || "Coder";
   } else {
     if ($("dashUserAvatar")) $("dashUserAvatar").src = "https://api.dicebear.com/7.x/bottts/svg?seed=alexcoder";
     if ($("dashUserName")) $("dashUserName").textContent = "Alex Coder";
+  }
+}
+
+function updateLandingUserUI() {
+  const signedInState = $("landingSignedInState");
+  const signedOutState = $("landingSignedOutState");
+  const navLoginBtn = $("navLoginTriggerBtn");
+  const navDashBtn = $("navGoToDashboardBtn");
+
+  if (currentUser) {
+    if (signedInState) signedInState.style.display = "block";
+    if (signedOutState) signedOutState.style.display = "none";
+    if (navLoginBtn) navLoginBtn.style.display = "none";
+    if (navDashBtn) navDashBtn.style.display = "inline-flex";
+
+    if ($("landingUserAvatar")) {
+      $("landingUserAvatar").src = currentUser.avatar || "https://api.dicebear.com/7.x/bottts/svg?seed=coder";
+    }
+    if ($("landingUserName")) {
+      $("landingUserName").textContent = currentUser.name ? `Welcome back, ${currentUser.name}` : "Welcome back";
+    }
+    if ($("landingUserEmail")) {
+      $("landingUserEmail").textContent = currentUser.email || "Google Account Connected";
+    }
+  } else {
+    if (signedInState) signedInState.style.display = "none";
+    if (signedOutState) signedOutState.style.display = "block";
+    if (navLoginBtn) navLoginBtn.style.display = "inline-flex";
+    if (navDashBtn) navDashBtn.style.display = "none";
   }
 }
 
@@ -440,6 +483,29 @@ function setupEventListeners() {
   });
 
   $("landingGoogleSignInBtn")?.addEventListener("click", handleGoogleLogin);
+  $("landingSignOutBtn")?.addEventListener("click", signOut);
+
+  // Top Left Logo navigation & Back to Landing/Main buttons
+  $("dashBrandLogo")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    switchView("landing");
+  });
+  $("dashGoToLandingBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    switchView("landing");
+  });
+  $("landingBrandLogo")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    switchView("landing");
+  });
+  $("navGoToDashboardBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    switchView("dashboard");
+  });
+  $("heroGoToDashboardBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    switchView("dashboard");
+  });
 
   // Dashboard Nav Buttons
   $("dashSignOutBtn")?.addEventListener("click", signOut);
