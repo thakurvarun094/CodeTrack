@@ -11,6 +11,11 @@ router.get("/upcoming", async (req, res) => {
     res.json({ contests });
   } catch (error) {
     noCache(res);
+    if (error.code === "UPSTREAM_TIMEOUT") {
+      return res.status(504).json({
+        error: error.message || "Upstream request timed out"
+      });
+    }
     res.status(500).json({ error: error.message || "Failed to fetch upcoming contests" });
   }
 });

@@ -1,7 +1,9 @@
+import { fetchWithTimeout } from "../utils/http.js";
+
 const GRAPHQL = "https://leetcode.com/graphql";
 
 async function gql(query, variables) {
-  const response = await fetch(GRAPHQL, {
+  const response = await fetchWithTimeout(GRAPHQL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

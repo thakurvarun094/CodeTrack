@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from "../utils/http.js";
+
 const API = "https://codeforces.com/api";
 
 async function cf(method, params) {
@@ -6,7 +8,7 @@ async function cf(method, params) {
     url.searchParams.set(key, value)
   );
 
-  const response = await fetch(url);
+  const response = await fetchWithTimeout(url);
   if (!response.ok) throw new Error(`Codeforces HTTP ${response.status}`);
 
   const data = await response.json();

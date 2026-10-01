@@ -1,11 +1,12 @@
 // Upcoming Contests Aggregator Service
+import { fetchWithTimeout } from "../utils/http.js";
 
 export async function getUpcomingContests() {
   const allContests = [];
 
   // 1. Codeforces Upcoming Contests
   try {
-    const cfRes = await fetch("https://codeforces.com/api/contest.list?gym=false", {
+    const cfRes = await fetchWithTimeout("https://codeforces.com/api/contest.list?gym=false", {
       headers: { "User-Agent": "CodeTrack-App" }
     });
     if (cfRes.ok) {
@@ -37,7 +38,7 @@ export async function getUpcomingContests() {
   // 2. LeetCode Upcoming Contests
   try {
     const query = "{ topTwoContests { title titleSlug startTime duration } }";
-    const lcRes = await fetch("https://leetcode.com/graphql", {
+    const lcRes = await fetchWithTimeout("https://leetcode.com/graphql", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,7 +73,7 @@ export async function getUpcomingContests() {
 
   // 3. CodeChef Upcoming Contests
   try {
-    const ccRes = await fetch(
+    const ccRes = await fetchWithTimeout(
       "https://www.codechef.com/api/list/contests/all?sort_by=START&sorting_order=asc&offset=0&mode=all",
       { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" } }
     );

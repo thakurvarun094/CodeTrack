@@ -1,4 +1,5 @@
 // GitHub Profile & Repository Analytics Service with Resilient Rate-Limit Fallback
+import { fetchWithTimeout } from "../utils/http.js";
 
 function parseCount(str) {
   if (!str) return 0;
@@ -16,9 +17,9 @@ async function scrapeGithubFallback(username) {
   };
 
   const [profileRes, reposRes, contribRes] = await Promise.all([
-    fetch(`https://github.com/${encodeURIComponent(clean)}`, { headers }),
-    fetch(`https://github.com/${encodeURIComponent(clean)}?tab=repositories`, { headers }),
-    fetch(`https://github.com/users/${encodeURIComponent(clean)}/contributions`, { headers })
+    fetchWithTimeout(`https://github.com/${encodeURIComponent(clean)}`, { headers }),
+    fetchWithTimeout(`https://github.com/${encodeURIComponent(clean)}?tab=repositories`, { headers }),
+    fetchWithTimeout(`https://github.com/users/${encodeURIComponent(clean)}/contributions`, { headers })
   ]);
 
   if (!profileRes.ok) {
@@ -150,8 +151,8 @@ export async function getGithub(username) {
 
   try {
     [userRes, reposRes] = await Promise.all([
-      fetch(`https://api.github.com/users/${encodeURIComponent(clean)}`, { headers }),
-      fetch(`https://api.github.com/users/${encodeURIComponent(clean)}/repos?per_page=60&sort=pushed`, { headers })
+      fetchWithTimeout(`https://api.github.com/users/${encodeURIComponent(clean)}`, { headers }),
+      fetchWithTimeout(`https://api.github.com/users/${encodeURIComponent(clean)}/repos?per_page=60&sort=pushed`, { headers })
     ]);
 
     if (!userRes.ok) {
@@ -164,6 +165,7 @@ export async function getGithub(username) {
     }
   } catch (err) {
     if (err.message.includes("not found")) throw err;
+    if (err.code === "UPSTREAM_TIMEOUT") throw err;
     useApi = false;
   }
 
@@ -208,7 +210,7 @@ export async function getGithub(username) {
     // Fetch live contribution activity
     let activity = {};
     try {
-      const contribRes = await fetch(`https://github.com/users/${encodeURIComponent(clean)}/contributions`, {
+      const contribRes = await fetchWithTimeout(`https://github.com/users/${encodeURIComponent(clean)}/contributions`, {
         headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" }
       });
       if (contribRes.ok) {
@@ -263,7 +265,7 @@ export async function detectCodingHandles(username) {
     if (process.env.GITHUB_TOKEN) {
       headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
     }
-    const userRes = await fetch(`https://api.github.com/users/${encodeURIComponent(clean)}`, { headers });
+    const userRes = await fetchWithTimeout(`https://api.github.com/users/${encodeURIComponent(clean)}`, { headers });
     if (userRes.ok) {
       const u = await userRes.json();
       name = u.name || u.login;
@@ -275,7 +277,7 @@ export async function detectCodingHandles(username) {
   // If fullText is empty or API was rate-limited, scrape profile HTML
   if (!fullText) {
     try {
-      const pageRes = await fetch(`https://github.com/${encodeURIComponent(clean)}`, {
+      const pageRes = await fetchWithTimeout(`https://github.com/${encodeURIComponent(clean)}`, {
         headers: {
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         }
@@ -292,7 +294,7 @@ export async function detectCodingHandles(username) {
   // Fetch profile README (from main, master)
   for (const branch of ["main", "master"]) {
     try {
-      const readmeRes = await fetch(
+      const readmeRes = await fetchWithTimeout(
         `https://raw.githubusercontent.com/${encodeURIComponent(clean)}/${encodeURIComponent(clean)}/${branch}/README.md`,
         { headers: { "User-Agent": "CodeTrack-App" } }
       );

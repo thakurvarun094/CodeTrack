@@ -18,6 +18,11 @@ router.get("/:handle", async (req, res) => {
     res.json(data);
   } catch (error) {
     noCache(res);
+    if (error.code === "UPSTREAM_TIMEOUT") {
+      return res.status(504).json({
+        error: error.message || "Upstream request timed out"
+      });
+    }
     res.status(404).json({
       error: error.message || "Unable to fetch Codeforces data"
     });

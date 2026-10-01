@@ -1,4 +1,5 @@
 // CodeChef Profile & Contest Ranking Service
+import { fetchWithTimeout } from "../utils/http.js";
 
 function calculateStars(rating) {
   if (!rating || rating <= 0) return 0;
@@ -24,7 +25,7 @@ export async function getCodechef(handle) {
   if (!clean) throw new Error("Invalid CodeChef username");
 
   const url = `https://www.codechef.com/users/${encodeURIComponent(clean)}`;
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
