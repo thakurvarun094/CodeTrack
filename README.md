@@ -30,6 +30,22 @@ Track and benchmark your competitive programming and software engineering progre
 - **Shareable Profile Card**: Export a progress card with a one-click summary formatted for LinkedIn and Twitter/X.
 
 ---
+
+## Deployment & Scaling
+
+### Environment Variables
+Configure the following in **Vercel → Project Settings → Environment Variables** (or in your local `.env` file):
+- `GITHUB_TOKEN`: GitHub Personal Access Token (classic token, no scopes needed). Increases GitHub API rate limits from 60 requests/hr (IP-based) to 5,000 requests/hr.
+
+### Edge & In-Memory Caching Architecture
+- **Platform Endpoints (10-minute cache)**:
+  - Responses for `/api/leetcode/:handle`, `/api/codeforces/:handle`, `/api/codechef/:handle`, and `/api/github/:handle` are cached at Vercel's edge CDN for 10 minutes (`s-maxage=600, stale-while-revalidate=1200`). Subsequent views of identical handles are served instantly from the CDN without hitting upstream platforms.
+  - Error responses (4xx/5xx) are never cached (`Cache-Control: no-store`).
+- **Upcoming Contests (15-minute cache)**:
+  - `/api/contests/upcoming` is cached at the edge CDN for 15 minutes (`s-maxage=900, stale-while-revalidate=1800`) and backed by an in-memory stale-on-error cache in `contestService.js` with a 15-minute TTL. Even if an upstream contest provider temporarily fails, stale contest schedules continue to serve seamlessly.
+
+---
+
 ## License
 
 MIT License. Open source and available for modification and distribution.
