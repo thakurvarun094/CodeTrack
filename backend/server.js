@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import rateLimit from "express-rate-limit";
 import codeforcesRouter from "./routes/codeforces.js";
 import leetcodeRouter from "./routes/leetcode.js";
 import codechefRouter from "./routes/codechef.js";
@@ -15,9 +16,12 @@ const frontendPath = path.join(__dirname, "..", "frontend");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set("trust proxy", 1);
+
 app.use(cors());
 app.use(express.json());
 
+// Exempt /api/health from rate limiting and caching
 app.get("/api/health", (_, res) => {
   res.json({
     ok: true,
@@ -25,6 +29,19 @@ app.get("/api/health", (_, res) => {
     supportedPlatforms: ["LeetCode", "Codeforces", "CodeChef", "GitHub"]
   });
 });
+
+// This rate limiter is per serverless instance, so it is a first line of defense only.
+// Recommend Vercel Firewall rate-limit rules for a hard limit.
+app.use(
+  "/api",
+  rateLimit({
+    windowMs: 60_000,
+    limit: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many requests, please slow down." }
+  })
+);
 
 app.use("/api/codeforces", codeforcesRouter);
 app.use("/api/leetcode", leetcodeRouter);
@@ -45,4 +62,3 @@ if (!process.env.VERCEL) {
     console.log(`CodeTrack running at http://localhost:${PORT}`);
   });
 }
-
