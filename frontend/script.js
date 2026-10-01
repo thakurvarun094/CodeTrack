@@ -5,7 +5,7 @@
 const $ = (id) => document.getElementById(id);
 
 // Application State
-let isDarkMode = localStorage.getItem('codetrack_dark_mode') === 'true';
+let isDarkMode = localStorage.getItem('codetrack_dark_mode') !== 'false';
 let currentUser = null;
 let supabaseClient = null;
 let leetcodeData = null;
@@ -16,6 +16,89 @@ let githubData = null;
 let combinedContests = [];
 let upcomingContests = [];
 let currentContestFilter = "all";
+
+// Command Center State
+let isCommandCenterManuallyExpanded = false;
+
+function hasGivenDetails() {
+  const lc = $("leetcodeUser")?.value?.trim();
+  const cf = $("codeforcesUser")?.value?.trim();
+  const cc = $("codechefUser")?.value?.trim();
+  const gh = $("githubUser")?.value?.trim();
+  return Boolean(lc || cf || cc || gh);
+}
+
+function renderCompressedPlatformPills() {
+  const container = $("cccPlatformPills");
+  if (!container) return;
+
+  const platforms = [
+    { name: "LeetCode", val: $("leetcodeUser")?.value?.trim(), icon: "assets/icons/leetcode.png" },
+    { name: "Codeforces", val: $("codeforcesUser")?.value?.trim(), icon: "assets/icons/codeforces.png" },
+    { name: "CodeChef", val: $("codechefUser")?.value?.trim(), icon: "assets/icons/codechef.png" },
+    { name: "GitHub", val: $("githubUser")?.value?.trim(), icon: "assets/icons/github.png" },
+  ];
+
+  const linked = platforms.filter((p) => Boolean(p.val));
+  if (linked.length === 0) {
+    container.innerHTML = `<span class="ccc-pill-empty">No platforms connected yet</span>`;
+    return;
+  }
+
+  container.innerHTML = linked
+    .map(
+      (p) => `
+    <span class="ccc-pill" title="${p.name}: ${p.val}">
+      <img src="${p.icon}" alt="${p.name}" class="ccc-pill-icon">
+      <span>${p.val}</span>
+    </span>
+  `
+    )
+    .join("");
+}
+
+function updateCommandCenterState(forceExpand = null) {
+  const connectCard = $("dash-connect");
+  const compressedBar = $("commandCenterCompressed");
+  const fab = $("fabCommandCenter");
+  if (!connectCard) return;
+
+  const hasDetails = hasGivenDetails();
+
+  if (forceExpand === true) {
+    isCommandCenterManuallyExpanded = true;
+  } else if (forceExpand === false) {
+    isCommandCenterManuallyExpanded = false;
+  }
+
+  // If user has NOT given details yet, always keep full form open
+  if (!hasDetails) {
+    connectCard.style.display = "block";
+    if (compressedBar) compressedBar.style.display = "none";
+    if (fab) fab.classList.remove("visible");
+    return;
+  }
+
+  // If user has given details at least once
+  if (isCommandCenterManuallyExpanded) {
+    connectCard.style.display = "block";
+    if (compressedBar) compressedBar.style.display = "none";
+    if (fab) fab.classList.remove("visible");
+  } else {
+    // Compress to small icon / compact strip
+    connectCard.style.display = "none";
+    if (compressedBar) {
+      compressedBar.style.display = "flex";
+      renderCompressedPlatformPills();
+    }
+    const isDashboardVisible = $("dashboardView") && $("dashboardView").style.display !== "none";
+    if (fab && isDashboardVisible) {
+      fab.classList.add("visible");
+    } else if (fab) {
+      fab.classList.remove("visible");
+    }
+  }
+}
 
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
@@ -43,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   loadSavedHandles();
   updatePlatformLinkBadges();
+  updateCommandCenterState();
   renderHeatmap({});
   fetchUpcomingContests();
 
@@ -115,6 +199,9 @@ function switchView(viewName) {
     // Update user info in dashboard top bar
     updateDashboardUserUI();
 
+    // Check command center compression state
+    updateCommandCenterState();
+
     // If handles exist, trigger live load
     const hasHandles = $("leetcodeUser").value || $("codeforcesUser").value || $("codechefUser").value || $("githubUser").value;
     if (hasHandles && !leetcodeData && !codeforcesData && !codechefData) {
@@ -123,6 +210,7 @@ function switchView(viewName) {
   } else {
     if (landing) landing.style.display = "block";
     if (dashboard) dashboard.style.display = "none";
+    $("fabCommandCenter")?.classList.remove("visible");
     if (window.location.hash === "#/dashboard") {
       window.location.hash = "#/";
     }
@@ -490,10 +578,6 @@ function setupEventListeners() {
     e.preventDefault();
     switchView("landing");
   });
-  $("dashGoToLandingBtn")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    switchView("landing");
-  });
   $("landingBrandLogo")?.addEventListener("click", (e) => {
     e.preventDefault();
     switchView("landing");
@@ -509,6 +593,44 @@ function setupEventListeners() {
 
   // Dashboard Nav Buttons
   $("dashSignOutBtn")?.addEventListener("click", signOut);
+
+  // Command Center Expand / Collapse Controls
+  $("expandCommandCenterBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    updateCommandCenterState(true);
+    $("dash-connect")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    $("leetcodeUser")?.focus();
+  });
+
+  $("commandCenterCompressed")?.addEventListener("click", (e) => {
+    if (e.target.closest("#quickSyncBtn") || e.target.closest("#expandCommandCenterBtn")) return;
+    updateCommandCenterState(true);
+    $("dash-connect")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  $("quickSyncBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    loadProfiles();
+  });
+
+  $("collapseCommandCenterBtn")?.addEventListener("click", () => {
+    if (hasGivenDetails()) {
+      updateCommandCenterState(false);
+    } else {
+      showStatus("Please enter at least one platform handle before compressing.", "info");
+    }
+  });
+
+  $("fabCommandCenter")?.addEventListener("click", () => {
+    const isExpanded = isCommandCenterManuallyExpanded || !hasGivenDetails();
+    if (isExpanded && hasGivenDetails()) {
+      updateCommandCenterState(false);
+    } else {
+      updateCommandCenterState(true);
+      $("dash-connect")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      $("leetcodeUser")?.focus();
+    }
+  });
 
   // Share Modal
   $("openShareModalBtn")?.addEventListener("click", openShareModal);
@@ -543,6 +665,7 @@ function setupEventListeners() {
       }
       saveHandles();
       updatePlatformLinkBadges();
+      renderCompressedPlatformPills();
     });
 
     input.addEventListener("change", (e) => {
@@ -552,6 +675,7 @@ function setupEventListeners() {
       }
       saveHandles();
       updatePlatformLinkBadges();
+      renderCompressedPlatformPills();
     });
 
     input.addEventListener("keydown", (e) => {
@@ -633,6 +757,7 @@ function clearAll() {
   if ($("githubUser")) $("githubUser").value = "";
   saveHandles();
   updatePlatformLinkBadges();
+  updateCommandCenterState(true);
 
   leetcodeData = null;
   codeforcesData = null;
@@ -787,6 +912,9 @@ async function loadProfiles() {
     buildCombinedContests();
     renderContests();
     updatePlatformLinkBadges();
+    if (hasGivenDetails()) {
+      updateCommandCenterState(false);
+    }
 
     if (errors.length && errors.length === promises.length) {
       showStatus(errors.join(" | "), "error");
