@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "node --watch backend/server.js"
+    "dev": "node --watch backend/server.js",
+    "test": "node backend/tests/smoke.mjs"
   },
   "dependencies": {
     "cors": "^2.8.5",
