@@ -1,12 +1,20 @@
 import { Router } from "express";
 import { getCodechef } from "../services/codechefService.js";
 import { setCache, noCache } from "../utils/cache.js";
+import { isValidHandle } from "../utils/validate.js";
 
 const router = Router();
 
 router.get("/:handle", async (req, res) => {
   try {
-    const data = await getCodechef(req.params.handle);
+    const handle = req.params.handle;
+
+    if (!isValidHandle(handle)) {
+      noCache(res);
+      return res.status(400).json({ error: "Invalid handle" });
+    }
+
+    const data = await getCodechef(handle);
     setCache(res, 600);
     res.json(data);
   } catch (error) {
@@ -16,7 +24,7 @@ router.get("/:handle", async (req, res) => {
         error: error.message || "Upstream request timed out"
       });
     }
-    const isNotFound = error.message.includes("not found");
+    const isNotFound = error.message && error.message.includes("not found");
     res.status(isNotFound ? 404 : 500).json({
       error: error.message || "Failed to fetch CodeChef data"
     });

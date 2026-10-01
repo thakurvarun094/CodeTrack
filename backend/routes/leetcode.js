@@ -1,16 +1,17 @@
 import { Router } from "express";
 import { getLeetcode } from "../services/leetcodeService.js";
 import { setCache, noCache } from "../utils/cache.js";
+import { isValidHandle } from "../utils/validate.js";
 
 const router = Router();
 
 router.get("/:username", async (req, res) => {
   try {
-    const username = String(req.params.username).trim();
+    const username = req.params.username;
 
-    if (!username) {
+    if (!isValidHandle(username)) {
       noCache(res);
-      return res.status(400).json({ error: "Username is required" });
+      return res.status(400).json({ error: "Invalid handle" });
     }
 
     const data = await getLeetcode(username);
@@ -23,7 +24,8 @@ router.get("/:username", async (req, res) => {
         error: error.message || "Upstream request timed out"
       });
     }
-    res.status(404).json({
+    const isNotFound = error.message && error.message.includes("not found");
+    res.status(isNotFound ? 404 : 500).json({
       error: error.message || "Unable to fetch LeetCode data"
     });
   }

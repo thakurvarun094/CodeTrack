@@ -1,16 +1,17 @@
 import { Router } from "express";
 import { getCodeforces } from "../services/codeforcesService.js";
 import { setCache, noCache } from "../utils/cache.js";
+import { isValidHandle } from "../utils/validate.js";
 
 const router = Router();
 
 router.get("/:handle", async (req, res) => {
   try {
-    const handle = String(req.params.handle).trim();
+    const handle = req.params.handle;
 
-    if (!handle) {
+    if (!isValidHandle(handle)) {
       noCache(res);
-      return res.status(400).json({ error: "Handle is required" });
+      return res.status(400).json({ error: "Invalid handle" });
     }
 
     const data = await getCodeforces(handle);
@@ -23,7 +24,8 @@ router.get("/:handle", async (req, res) => {
         error: error.message || "Upstream request timed out"
       });
     }
-    res.status(404).json({
+    const isNotFound = error.message && error.message.includes("not found");
+    res.status(isNotFound ? 404 : 500).json({
       error: error.message || "Unable to fetch Codeforces data"
     });
   }
