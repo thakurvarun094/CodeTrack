@@ -44,6 +44,14 @@ Configure the following in **Vercel → Project Settings → Environment Variabl
 - **Upcoming Contests (15-minute cache)**:
   - `/api/contests/upcoming` is cached at the edge CDN for 15 minutes (`s-maxage=900, stale-while-revalidate=1800`) and backed by an in-memory stale-on-error cache in `contestService.js` with a 15-minute TTL. Even if an upstream contest provider temporarily fails, stale contest schedules continue to serve seamlessly.
 
+### Load Testing
+Run the k6 load testing script located at `loadtest/k6.js`:
+```bash
+k6 run loadtest/k6.js
+```
+> [!NOTE]
+> Run load tests against a **preview deployment**, and use a small set of real test handles with `/api/<platform>/<handle>`, because heavy testing can get your IP rate-limited by the upstream sites.
+
 ---
 
 ## License
