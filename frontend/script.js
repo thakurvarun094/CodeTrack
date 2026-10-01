@@ -848,11 +848,20 @@ async function loadProfiles() {
           .then(async (r) => {
             if (!r.ok) {
               const err = await r.json().catch(() => ({}));
-              throw new Error(`LeetCode: ${err.error || "User not found"}`);
+              const isNotFound = r.status === 404;
+              if ($("lcUser")) $("lcUser").textContent = isNotFound ? "User not found" : "unavailable, try again later";
+              throw new Error(`LeetCode: ${err.error || (isNotFound ? "User not found" : "unavailable, try again later")}`);
             }
             return r.json();
           })
           .then((d) => { leetcodeData = d; })
+          .catch((err) => {
+            leetcodeData = null;
+            if ($("lcUser") && $("lcUser").textContent !== "User not found") {
+              $("lcUser").textContent = "unavailable, try again later";
+            }
+            throw err;
+          })
       );
     } else { leetcodeData = null; }
 
@@ -862,11 +871,20 @@ async function loadProfiles() {
           .then(async (r) => {
             if (!r.ok) {
               const err = await r.json().catch(() => ({}));
-              throw new Error(`Codeforces: ${err.error || "User not found"}`);
+              const isNotFound = r.status === 404;
+              if ($("cfUser")) $("cfUser").textContent = isNotFound ? "User not found" : "unavailable, try again later";
+              throw new Error(`Codeforces: ${err.error || (isNotFound ? "User not found" : "unavailable, try again later")}`);
             }
             return r.json();
           })
           .then((d) => { codeforcesData = d; })
+          .catch((err) => {
+            codeforcesData = null;
+            if ($("cfUser") && $("cfUser").textContent !== "User not found") {
+              $("cfUser").textContent = "unavailable, try again later";
+            }
+            throw err;
+          })
       );
     } else { codeforcesData = null; }
 
@@ -876,11 +894,20 @@ async function loadProfiles() {
           .then(async (r) => {
             if (!r.ok) {
               const err = await r.json().catch(() => ({}));
-              throw new Error(`CodeChef: ${err.error || "User not found"}`);
+              const isNotFound = r.status === 404;
+              if ($("ccUser")) $("ccUser").textContent = isNotFound ? "User not found" : "unavailable, try again later";
+              throw new Error(`CodeChef: ${err.error || (isNotFound ? "User not found" : "unavailable, try again later")}`);
             }
             return r.json();
           })
           .then((d) => { codechefData = d; })
+          .catch((err) => {
+            codechefData = null;
+            if ($("ccUser") && $("ccUser").textContent !== "User not found") {
+              $("ccUser").textContent = "unavailable, try again later";
+            }
+            throw err;
+          })
       );
     } else { codechefData = null; }
 
@@ -890,11 +917,20 @@ async function loadProfiles() {
           .then(async (r) => {
             if (!r.ok) {
               const err = await r.json().catch(() => ({}));
-              throw new Error(`GitHub: ${err.error || "User not found"}`);
+              const isNotFound = r.status === 404;
+              if ($("ghUser")) $("ghUser").textContent = isNotFound ? "User not found" : "unavailable, try again later";
+              throw new Error(`GitHub: ${err.error || (isNotFound ? "User not found" : "unavailable, try again later")}`);
             }
             return r.json();
           })
           .then((d) => { githubData = d; })
+          .catch((err) => {
+            githubData = null;
+            if ($("ghUser") && $("ghUser").textContent !== "User not found") {
+              $("ghUser").textContent = "unavailable, try again later";
+            }
+            throw err;
+          })
       );
     } else { githubData = null; }
 
